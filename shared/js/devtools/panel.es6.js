@@ -6,8 +6,44 @@ const tabPicker = document.getElementById('tab-picker')
 const tdsOption = document.getElementById('tds')
 const displayFilters = document.querySelectorAll('#table-filter input')
 
+/**
+ * @param {Node} element
+ * @returns {HTMLTableRowElement}
+ */
+function assertTableRowElement(element) {
+    // @ts-ignore
+    return element
+}
+
 function sendMessage (messageType, options, callback) {
     chrome.runtime.sendMessage({ messageType, options }, callback)
+}
+
+/**
+ * @param {(m: any) => HTMLTableRowElement} f
+ * @returns {(m: any) => void}
+ */
+function addRequestRow(f) {
+    return (m) => {
+        const row = f(m)
+        if (row) {
+            // if duplicate request lines would be printed, we instead show a counter increment
+            const prevRow = document.querySelector('tbody > tr:last-child')
+            if (prevRow) {
+                const prevRowCopy = assertTableRowElement(prevRow.cloneNode(true))
+                prevRowCopy.querySelector('.action-count').textContent = ''
+                if (prevRowCopy.innerHTML == row.innerHTML) {
+                    const countElt = prevRow.querySelector('.action-count')
+                    const prevCount = parseInt(countElt.textContent.replaceAll(/[ \[\]]/g, '') || '1')
+                    countElt.textContent = ` [${prevCount + 1}]`
+                } else {
+                    table.appendChild(row)
+                }
+            } else {
+                table.appendChild(row)
+            }
+        }
+    }
 }
 
 let tabId = chrome.devtools?.inspectedWindow?.tabId || parseInt(0 + new URL(document.location.href).searchParams.get('tabId'))
@@ -48,7 +84,7 @@ const actionIcons = {
 }
 
 const actionHandlers = {
-    tracker: (m) => {
+    tracker: addRequestRow((m) => {
         const { tracker, url, requestData, siteUrl } = m.message
         const row = document.getElementById('request-row').content.firstElementChild.cloneNode(true)
         const cells = row.querySelectorAll('td')
@@ -71,12 +107,13 @@ const actionHandlers = {
             row.classList.remove(tracker.action)
             row.classList.add(toggleLink.innerText === 'I' ? 'ignore' : 'block')
         });
-        [url, `${actionIcons[tracker.action]} ${tracker.action} (${tracker.reason})`, tracker.fullTrackerDomain, requestData.type].forEach((text, i) => {
-            cells[i + 1].innerText = text
-        })
+        cells[1].textContent = url
+        cells[2].querySelector('.request-action').textContent = `${actionIcons[tracker.action]} ${tracker.action} (${tracker.reason})`
+        cells[3].textContent = tracker.fullTrackerDomain
+        cells[4].textContent = requestData.type
         row.classList.add(tracker.action)
-        table.appendChild(row)
-    },
+        return row
+    }),
     tabChange: (m) => {
         const tab = m.message
         protectionButton.innerText = `Protection: ${tab.site?.allowlisted || tab.site?.isBroken ? 'OFF' : 'ON'}`
@@ -86,7 +123,7 @@ const actionHandlers = {
             })
         })
     },
-    cookie: (m) => {
+    cookie: addRequestRow((m) => {
         const { action, kind, url, requestId, type } = m.message
         const rowId = `request-${requestId}`
         if (document.getElementById(rowId) !== null) {
@@ -102,31 +139,31 @@ const actionHandlers = {
             cleanUrl.search = ''
             cleanUrl.hash = ''
             cells[1].textContent = cleanUrl.href
-            cells[2].textContent = `🍪 ${action}`
+            cells[2].querySelector('.request-action').textContent = `🍪 ${action}`
             cells[3].textContent = kind
             cells[4].textContent = type
             row.classList.add(kind)
-            table.appendChild(row)
+            return row
         }
-    },
-    jscookie: (m) => {
+    }),
+    jscookie: addRequestRow((m) => {
         const { documentUrl, action, reason, value, stack, scriptOrigins } = m.message
         const row = document.getElementById('cookie-row').content.firstElementChild.cloneNode(true)
         const cells = row.querySelectorAll('td')
         cells[1].textContent = documentUrl
-        cells[2].textContent = `JS🍪 ${action} (${reason})`
+        cells[2].querySelector('.request-action').textContent = `JS🍪 ${action} (${reason})`
         cells[3].textContent = scriptOrigins.join(',')
         appendCallStack(cells[3], stack)
         cells[4].textContent = value.split(';')[0]
         row.classList.add('jscookie')
-        table.appendChild(row)
-    },
-    fingerprintingCanvas: (m) => {
+        return row
+    }),
+    fingerprintingCanvas: addRequestRow((m) => {
         const { documentUrl, action, kind, stack, args } = m.message
         const row = document.getElementById('cookie-row').content.firstElementChild.cloneNode(true)
         const cells = row.querySelectorAll('td')
         cells[1].textContent = documentUrl
-        cells[2].textContent = `Canvas ${action}`
+        cells[2].querySelector('.request-action').textContent = `Canvas ${action}`
         const argsOut = JSON.parse(args).join(', ')
         cells[3].setAttribute('colspan', 2)
         cells[4].remove()
@@ -135,8 +172,8 @@ const actionHandlers = {
         appendCallStack(cells[3], stack)
 
         row.classList.add('canvas')
-        table.appendChild(row)
-    }
+        return row
+    })
 }
 
 function appendCallStack (cell, stack) {
