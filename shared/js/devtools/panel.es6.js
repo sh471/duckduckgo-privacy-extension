@@ -10,7 +10,7 @@ const displayFilters = document.querySelectorAll('#table-filter input')
  * @param {Node} element
  * @returns {HTMLTableRowElement}
  */
-function assertTableRowElement(element) {
+function assertTableRowElement (element) {
     // @ts-ignore
     return element
 }
@@ -23,7 +23,7 @@ function sendMessage (messageType, options, callback) {
  * @param {(m: any) => HTMLTableRowElement} f
  * @returns {(m: any) => void}
  */
-function addRequestRow(f) {
+function addRequestRow (f) {
     return (m) => {
         const row = f(m)
         if (row) {
@@ -32,9 +32,9 @@ function addRequestRow(f) {
             if (prevRow) {
                 const prevRowCopy = assertTableRowElement(prevRow.cloneNode(true))
                 prevRowCopy.querySelector('.action-count').textContent = ''
-                if (prevRowCopy.innerHTML == row.innerHTML) {
+                if (prevRowCopy.innerHTML === row.innerHTML) {
                     const countElt = prevRow.querySelector('.action-count')
-                    const prevCount = parseInt(countElt.textContent.replaceAll(/[ \[\]]/g, '') || '1')
+                    const prevCount = parseInt(countElt.textContent.replaceAll(/[ [\]]/g, '') || '1')
                     countElt.textContent = ` [${prevCount + 1}]`
                 } else {
                     table.appendChild(row)
@@ -106,7 +106,7 @@ const actionHandlers = {
             })
             row.classList.remove(tracker.action)
             row.classList.add(toggleLink.innerText === 'I' ? 'ignore' : 'block')
-        });
+        })
         cells[1].textContent = url
         cells[2].querySelector('.request-action').textContent = `${actionIcons[tracker.action]} ${tracker.action} (${tracker.reason})`
         cells[3].textContent = tracker.fullTrackerDomain
