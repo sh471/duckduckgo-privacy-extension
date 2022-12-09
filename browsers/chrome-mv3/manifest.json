@@ -70,8 +70,13 @@
         "tabs",
         "webRequest",
         "webNavigation",
-        "cookies"
+        "cookies",
+        "favicon",
+        "topSites"
     ],
+    "chrome_url_overrides": {
+        "newtab": "newtab/newtab.html"
+    },
     "host_permissions": [
         "*://*/*"
     ],
@@ -93,3 +98,4 @@
         "managed_schema": "managed-schema.json"
     }
 }
+

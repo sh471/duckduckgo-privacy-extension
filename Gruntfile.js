@@ -74,7 +74,8 @@ module.exports = function (grunt) {
         autofillContentScript: ['<%= ddgAutofill %>/*.js'],
         autofillCSS: ['<%= ddgAutofill %>/*.css'],
         contentScope: [`${ddgContentScope}/src/**/*.js`, `${ddgContentScope}/inject/**/*.js`],
-        data: ['<%= dirs.data %>/*.js']
+        data: ['<%= dirs.data %>/*.js'],
+        newtab: 'shared/newtab/**'
     }
 
     const karmaOps = {
@@ -104,8 +105,8 @@ module.exports = function (grunt) {
     let contentScopeBuild = ''
     // If we're watching the content scope files, regenerate them
     if (grunt.option('watch')) {
-        contentScopeInstall = `cd ${ddgContentScope} && npm install --legacy-peer-deps`
-        contentScopeBuild = `cd ${ddgContentScope} && npm run build && cd - && `
+        // contentScopeInstall = `cd ${ddgContentScope} && npm install --legacy-peer-deps`
+        // contentScopeBuild = `cd ${ddgContentScope} && npm run build && cd - && `
     }
 
     const ddgAutofill = 'node_modules/@duckduckgo/autofill/dist'
@@ -117,7 +118,7 @@ module.exports = function (grunt) {
             src: {
                 js: 'shared/js',
                 scss: 'shared/scss',
-                templates: 'shared/templates'
+                templates: 'shared/templates',
             },
             data: 'shared/data',
             public: {
@@ -197,7 +198,8 @@ module.exports = function (grunt) {
             copyDash: `cp -r ${join(dashboardDir, 'build/app')} build/${browser}/${buildType}/dashboard`,
             copyAutofillJs: `mkdir -p build/${browser}/${buildType}/public/js/content-scripts/ && cp ${ddgAutofill}/*.js build/${browser}/${buildType}/public/js/content-scripts/`,
             copyAutofillCSS: `cp -r ${ddgAutofill}/autofill.css build/${browser}/${buildType}/public/css/`,
-            copyAutofillHostCSS: `cp -r ${ddgAutofill}/autofill-host-styles_${browserSimilar}.css build/${browser}/${buildType}/public/css/autofill-host-styles.css`
+            copyAutofillHostCSS: `cp -r ${ddgAutofill}/autofill-host-styles_${browserSimilar}.css build/${browser}/${buildType}/public/css/autofill-host-styles.css`,
+            copyNewTab: `cp -r shared/newtab/ build/${browser}/${buildType}/newtab/`
         },
 
         watch: {
@@ -207,7 +209,7 @@ module.exports = function (grunt) {
             },
             ui: {
                 files: watch.ui,
-                tasks: ['browserify:ui', 'exec:copyData']
+                tasks: ['browserify:ui',  'exec:copyData']
             },
             contentScope: {
                 files: watch.contentScope,
@@ -236,6 +238,10 @@ module.exports = function (grunt) {
             data: {
                 files: watch.data,
                 tasks: ['exec:copyData']
+            },
+            newtab: {
+                files: 'shared/newtab/**/*',
+                tasks: ['exec:copyNewTab']
             }
         },
 
@@ -263,7 +269,8 @@ module.exports = function (grunt) {
         'exec:copyDash',
         'exec:copyAutofillJs',
         'exec:copyAutofillCSS',
-        'exec:copyAutofillHostCSS'
+        'exec:copyAutofillHostCSS',
+        'exec:copyNewTab'
     ])
 
     const devTasks = ['build']

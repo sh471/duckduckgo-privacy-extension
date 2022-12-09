@@ -14,6 +14,9 @@
         "default_icon": "img/icon_browser_action.png",
         "default_popup": "dashboard/html/browser.html"
     },
+    "chrome_url_overrides": {
+        "newtab": "newtab/newtab.html"
+    },
     "omnibox": {
         "keyword": "ddg"
     },
@@ -74,8 +77,12 @@
         "tabs",
         "storage",
         "<all_urls>",
-        "alarms"
+        "alarms",
+        "topSites",
+        "chrome://favicon/",
+        "favicon"
     ],
+    "content_security_policy": "img-src chrome://favicon;",
     "web_accessible_resources": [
         "/web_accessible_resources/*",
         "/img/logo-small.svg",
