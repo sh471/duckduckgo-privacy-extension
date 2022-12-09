@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill'
+import { companiesSimples } from './companies-simple'
 const tldts = require('tldts')
 
 const utils = require('./utils.es6')
@@ -314,6 +315,10 @@ function blockHandleResponse (thisTab, requestData) {
         if (['block', 'redirect'].includes(tracker.action)) {
             // @ts-ignore
             Companies.add(tracker.tracker.owner)
+
+            if (tracker?.tracker?.owner) {
+                companiesSimples.increment(tracker.tracker.owner)
+            }
 
             console.info('blocked ' + utils.extractHostFromURL(thisTab.url) +
                         // @ts-ignore

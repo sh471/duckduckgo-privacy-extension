@@ -7,6 +7,7 @@ const Companies = (() => {
     const topBlocked = new TopBlocked()
     const storageName = 'companyData'
     let totalPages = 0
+    let totalAttempts = 0
     let totalPagesWithTrackers = 0
     let lastStatsResetDate = null
 
@@ -110,6 +111,7 @@ const Companies = (() => {
             browserWrapper.syncToStorage({ totalPages })
             browserWrapper.syncToStorage({ totalPagesWithTrackers })
             browserWrapper.syncToStorage({ lastStatsResetDate })
+            browserWrapper.syncToStorage({ totalAttempts })
         },
 
         sanitizeData: (storageData) => {
@@ -133,6 +135,7 @@ const Companies = (() => {
             })
 
             browserWrapper.getFromStorage('totalPages').then((n) => { if (n) totalPages = n })
+            browserWrapper.getFromStorage('totalAttempts').then((n) => { totalAttempts = n ?? 0 })
             browserWrapper.getFromStorage('totalPagesWithTrackers').then((n) => { if (n) totalPagesWithTrackers = n })
             browserWrapper.getFromStorage('lastStatsResetDate').then((d) => {
                 if (d) {

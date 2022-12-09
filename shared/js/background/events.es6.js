@@ -8,6 +8,8 @@ import browser from 'webextension-polyfill'
 import * as messageHandlers from './message-handlers'
 import { removeInverseRules } from './classes/custom-rules-manager'
 import { flushSessionRules } from './declarative-net-request'
+import { icons } from '../newtab/data'
+import { companiesSimples } from './companies-simple'
 const ATB = require('./atb.es6')
 const utils = require('./utils.es6')
 const experiment = require('./experiments.es6')
@@ -461,6 +463,43 @@ if (manifestVersion === 3) {
 }
 
 // Inject the Click to Load content script to display placeholders.
+browser.webNavigation.onCompleted.addListener(details => {
+    sendNewTabPage();
+})
+
+messageHandlers['newTabPage.update.readInitial'] = () => {
+    sendNewTabPage();
+}
+
+function sendNewTabPage() {
+    chrome.runtime.sendMessage({
+        messageType: 'newTabPage.update',
+        options: companiesSimples.toJSON()
+    })
+}
+
+export function normalizeCompanyName(companyName) {
+    return (
+        (companyName || '')
+            .toLowerCase()
+            // Remove TLD suffixes
+            // e.g. Fixes cases like "amazon.com" -> "amazon"
+            .replace(/\.[a-z]+$/i, '')
+            // Remove non-alphanumeric characters
+            // e.g. Fixes cases like "new relic" -> "newrelic"
+            .replace(/[^a-z0-9]/g, '')
+    )
+}
+
+let lastTop = companiesSimples.totalAttempts;
+setInterval(() => {
+    if (companiesSimples.totalAttempts!==lastTop) {
+        lastTop = companiesSimples.totalAttempts;
+        sendNewTabPage()
+    }
+}, 1000)
+
+
 browser.webNavigation.onCommitted.addListener(details => {
     const tab = tabManager.get({ tabId: details.tabId })
 
@@ -498,7 +537,7 @@ browserWrapper.createAlarm('clearExpiredHTTPSServiceCache', { periodInMinutes: 6
 browserWrapper.createAlarm('rotateUserAgent', { periodInMinutes: 24 * 60 })
 // Rotate the sessionKey
 browserWrapper.createAlarm('rotateSessionKey', { periodInMinutes: 24 * 60 })
-
+//
 browser.alarms.onAlarm.addListener(async alarmEvent => {
     // Warning: Awaiting in this function doesn't actually wait for the promise to resolve before unblocking the main thread.
     if (alarmEvent.name === 'updateHTTPSLists') {
@@ -522,6 +561,8 @@ browser.alarms.onAlarm.addListener(async alarmEvent => {
         }
     } else if (alarmEvent.name === 'clearExpiredHTTPSServiceCache') {
         httpsService.clearExpiredCache()
+    } else if (alarmEvent.name === 'sendCompanies') {
+
     } else if (alarmEvent.name === 'rotateSessionKey') {
         await utils.resetSessionKey()
     } else if (alarmEvent.name === REFETCH_ALIAS_ALARM) {
