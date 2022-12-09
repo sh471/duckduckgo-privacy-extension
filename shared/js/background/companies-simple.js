@@ -5,9 +5,15 @@ import * as browserWrapper from './wrapper.es6'
 export class CompaniesSimple {
     totalAttempts = 0
     companies = new Map()
-
     totalPeriod = 'install-time'
     trackerCompaniesPeriod = 'last-hour'
+
+    reset() {
+        this.companies.clear();
+        this.totalAttempts = 0;
+        this.sync()
+        return this;
+    }
 
     // TODO(Shane): This is using 'trackerOwner.displayName' as the storage key, should it?
     increment (trackerOwner) {

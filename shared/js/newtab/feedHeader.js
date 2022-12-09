@@ -46,22 +46,24 @@ export class FeedHeader extends LitElement {
     ]
 
     static properties = {
-        totalCount: { type: Number }
+        totalCount: { type: Number },
+        reset: { type: Function }
     }
 
     render () {
         return html`
             <div class="root">
-            <span class="shield">
-                <img src="shield.png" alt="">
-            </span>
-                <span class="title">
-                ${this.totalCount} tracking attempts blocked
-            </span>
-                <span class="subtitle">
-                Since using the DuckDuckGo Extension
-            </span>
+                <span class="shield">
+                    <img src="shield.png" alt="">
+                </span>
+                    <span class="title">
+                    ${this.totalCount} tracking attempts blocked
+                </span>
+                    <span class="subtitle">
+                    Since using the DuckDuckGo Extension
+                </span>
             </div>
+            ${this.resetButton}
         `
     }
 }

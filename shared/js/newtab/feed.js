@@ -40,12 +40,21 @@ export class Feed extends LitElement {
         if (this.trackerCompanies.length === 0) {
             return null;
         }
+        const max = this.trackerCompanies[0].count;
         return html`
             <h2>Blocked over the last hour</h2>
             <ul>
-                ${repeat(this.trackerCompanies, (x) => x.name, item => html`
-                    <ddg-stat-row .count=${item.count} .name=${item.name} .favicon=${item.favicon}></ddg-stat-row>
-                `)}
+                ${repeat(this.trackerCompanies, (x) => x.name, (item, index) => {
+                    const percentage = Math.min((item.count * 100) / max, 100);
+                    return html`
+                        <ddg-stat-row 
+                            .count=${item.count} 
+                            .name=${item.name} 
+                            .percentage=${percentage} 
+                            .favicon=${item.favicon} 
+                            .index=${index}></ddg-stat-row>
+                    `
+                })}
             </ul>`
     }
 }

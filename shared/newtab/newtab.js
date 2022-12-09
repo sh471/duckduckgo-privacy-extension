@@ -598,16 +598,17 @@
     render() {
       return y`
             <div class="root">
-            <span class="shield">
-                <img src="shield.png" alt="">
-            </span>
-                <span class="title">
-                ${this.totalCount} tracking attempts blocked
-            </span>
-                <span class="subtitle">
-                Since using the DuckDuckGo Extension
-            </span>
+                <span class="shield">
+                    <img src="shield.png" alt="">
+                </span>
+                    <span class="title">
+                    ${this.totalCount} tracking attempts blocked
+                </span>
+                    <span class="subtitle">
+                    Since using the DuckDuckGo Extension
+                </span>
             </div>
+            ${this.resetButton}
         `;
     }
   };
@@ -654,12 +655,19 @@
         `
   ]);
   __publicField(FeedHeader, "properties", {
-    totalCount: { type: Number }
+    totalCount: { type: Number },
+    reset: { type: Function }
   });
   customElements.define("ddg-feed-header", FeedHeader);
 
   // shared/js/newtab/statRow.js
   var StatRow = class extends s4 {
+    get countText() {
+      if (this.index === 0) {
+        return y`${this.count} attempt${this.count === 1 ? "" : "s"}`;
+      }
+      return y`${this.count}`;
+    }
     render() {
       return y`
             <li>
@@ -670,7 +678,7 @@
                     <span class="company-name">${this.name}</span>
                 </div>
                 <div class="bar">
-                    ${this.count} attempt${this.count === 1 ? "" : "s"}
+                    <div class="bar-inner" style="min-width: ${this.percentage}%; max-width: 60%">${this.countText}</div>
                 </div>
             </li>
         `;
@@ -678,6 +686,9 @@
   };
   __publicField(StatRow, "styles", [
     i`
+          *, *:before, *:after {
+            box-sizing: border-box;
+          }
           li {
             display: flex;
           }
@@ -694,9 +705,13 @@
           }
 
           .bar {
-            width: 60%;
             display: flex;
             flex: 1;
+            width: 60%;
+          }
+          
+          .bar-inner {
+            display: flex;
             border-radius: 20px;
             background: rgba(0, 0, 0, 0.06);
             padding: 5.5px 8px;
@@ -704,7 +719,7 @@
             font-size: 10px;
             font-weight: 600;
             line-height: 13px;
-            letter-spacing: 0.11999999731779099px;
+            letter-spacing: 0.11999999731779099px; 
           }
 
           .company-icon {
@@ -720,6 +735,11 @@
 
           .company-name {
             margin-left: 12px;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 16px;
           }
 
           .img {
@@ -732,7 +752,9 @@
   __publicField(StatRow, "properties", {
     count: { type: Number },
     name: { type: String },
-    favicon: { type: String }
+    favicon: { type: String },
+    index: { type: Number },
+    percentage: { type: Number }
   });
   customElements.define("ddg-stat-row", StatRow);
 
@@ -871,12 +893,21 @@
       if (this.trackerCompanies.length === 0) {
         return null;
       }
+      const max = this.trackerCompanies[0].count;
       return y`
             <h2>Blocked over the last hour</h2>
             <ul>
-                ${c4(this.trackerCompanies, (x2) => x2.name, (item) => y`
-                    <ddg-stat-row .count=${item.count} .name=${item.name} .favicon=${item.favicon}></ddg-stat-row>
-                `)}
+                ${c4(this.trackerCompanies, (x2) => x2.name, (item, index) => {
+        const percentage = Math.min(item.count * 100 / max, 100);
+        return y`
+                        <ddg-stat-row 
+                            .count=${item.count} 
+                            .name=${item.name} 
+                            .percentage=${percentage} 
+                            .favicon=${item.favicon} 
+                            .index=${index}></ddg-stat-row>
+                    `;
+      })}
             </ul>`;
     }
   };
@@ -3738,19 +3769,18 @@
         if (msg.messageType === "newTabPage.update") {
           const data = jsonSchema.parse(msg.options);
           const sorted = data.trackerCompanies.sort((a3, b2) => b2.count - a3.count);
-          const first = sorted.slice(0, 10);
-          const other = sorted.slice(10);
-          const otherTotal = other.reduce((sum, item) => sum += item.count, 0);
-          this.trackerCompanies = first;
+          const listToRender = sorted.slice(0, 9);
+          const other = sorted.slice(9);
+          const otherTotal = other.reduce((sum, item) => sum + item.count, 0);
           if (otherTotal > 0) {
-            this.trackerCompanies.push({
+            listToRender.push({
               name: "Other",
               displayName: "Other",
               count: otherTotal,
-              favicon: "Shield.png"
+              favicon: "Other.png"
             });
           }
-          ;
+          this.trackerCompanies = listToRender;
           this.trackerCompaniesPeriod = data.trackerCompaniesPeriod;
           this.totalCount = data.totalCount;
           this.totalPeriod = data.totalPeriod;
@@ -3765,11 +3795,24 @@
             <div class="root">
                 <ddg-feed-header .totalCount=${this.totalCount}></ddg-feed-header>
                 <ddg-feed .trackerCompanies=${this.trackerCompanies}></ddg-feed>
+                ${this.resetButton}
             </div>
         `;
     }
+    get resetButton() {
+      if (this.totalCount > 0) {
+        return y`
+            <div class="actions">
+                <button @click=${this.reset} type="button" class="reset">Clear</button>
+            </div>`;
+      }
+      return null;
+    }
     fetchInitial() {
       window.chrome.runtime.sendMessage({ messageType: "newTabPage.update.readInitial" });
+    }
+    reset() {
+      window.chrome.runtime.sendMessage({ messageType: "newTabPage.update.reset" });
     }
   };
   __publicField(TrackerStats, "styles", [i`
@@ -3782,6 +3825,21 @@
       ddg-feed {
         display: block;
         margin-top: 16px;
+      }
+      .reset {
+        appearance: none;
+        border: 0;
+        box-shadow: none;
+        background: transparent;
+        cursor: pointer;
+        color: rgba(0, 0, 0, .64)
+      }
+      .reset:hover {
+        text-decoration: underline;
+      }
+      .actions {
+        margin-top: 16px;
+        text-align: right;
       }
     `]);
   __publicField(TrackerStats, "properties", {

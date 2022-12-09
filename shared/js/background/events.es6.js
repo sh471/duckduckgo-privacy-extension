@@ -471,6 +471,13 @@ messageHandlers['newTabPage.update.readInitial'] = () => {
     sendNewTabPage();
 }
 
+messageHandlers['newTabPage.update.reset'] = () => {
+    chrome.runtime.sendMessage({
+        messageType: 'newTabPage.update',
+        options: companiesSimples.reset().toJSON()
+    })
+}
+
 function sendNewTabPage() {
     chrome.runtime.sendMessage({
         messageType: 'newTabPage.update',
@@ -493,7 +500,7 @@ export function normalizeCompanyName(companyName) {
 
 let lastTop = companiesSimples.totalAttempts;
 setInterval(() => {
-    if (companiesSimples.totalAttempts!==lastTop) {
+    if (companiesSimples.totalAttempts !== lastTop) {
         lastTop = companiesSimples.totalAttempts;
         sendNewTabPage()
     }

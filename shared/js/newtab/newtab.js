@@ -16,6 +16,21 @@ class TrackerStats extends LitElement {
         display: block;
         margin-top: 16px;
       }
+      .reset {
+        appearance: none;
+        border: 0;
+        box-shadow: none;
+        background: transparent;
+        cursor: pointer;
+        color: rgba(0, 0, 0, .64)
+      }
+      .reset:hover {
+        text-decoration: underline;
+      }
+      .actions {
+        margin-top: 16px;
+        text-align: right;
+      }
     `]
 
     trackerCompanies = []
@@ -47,19 +62,19 @@ class TrackerStats extends LitElement {
         window.chrome.runtime.onMessage.addListener(msg => {
             if (msg.messageType === 'newTabPage.update') {
                 const data = jsonSchema.parse(msg.options);
-                const sorted = data.trackerCompanies.sort((a, b) => b.count-a.count);
-                const first = sorted.slice(0, 10);
-                const other = sorted.slice(10);
-                const otherTotal = other.reduce((sum, item) => sum+=item.count, 0);
-                this.trackerCompanies = first;
+                const sorted = data.trackerCompanies.sort((a, b) => b.count - a.count);
+                const listToRender = sorted.slice(0, 9);
+                const other = sorted.slice(9);
+                const otherTotal = other.reduce((sum, item) => sum + item.count, 0);
                 if (otherTotal > 0) {
-                    this.trackerCompanies.push({
+                    listToRender.push({
                         name: 'Other',
                         displayName: 'Other',
                         count: otherTotal,
-                        favicon: 'Shield.png',
+                        favicon: 'Other.png',
                     })
-                };
+                }
+                this.trackerCompanies = listToRender;
                 this.trackerCompaniesPeriod = data.trackerCompaniesPeriod;
                 this.totalCount = data.totalCount;
                 this.totalPeriod = data.totalPeriod;
@@ -71,18 +86,32 @@ class TrackerStats extends LitElement {
         })
     }
 
-
     render () {
         return html`
             <div class="root">
                 <ddg-feed-header .totalCount=${this.totalCount}></ddg-feed-header>
                 <ddg-feed .trackerCompanies=${this.trackerCompanies}></ddg-feed>
+                ${this.resetButton}
             </div>
         `
     }
 
+    get resetButton() {
+        if (this.totalCount > 0) {
+            return html`
+            <div class="actions">
+                <button @click=${this.reset} type="button" class="reset">Clear</button>
+            </div>`
+        }
+        return null
+    }
+
     fetchInitial () {
         window.chrome.runtime.sendMessage({messageType: 'newTabPage.update.readInitial'})
+    }
+
+    reset() {
+        window.chrome.runtime.sendMessage({messageType: 'newTabPage.update.reset'})
     }
 }
 

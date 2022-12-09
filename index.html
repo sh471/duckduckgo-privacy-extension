@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<script type="module">
+    fetch("links.json")
+        .then(x => x.json())
+        .then(async (links) => {
+            const amount = new URLSearchParams(location.search).get('count') ?? links.length;
+            const interval = Number(new URLSearchParams(location.search).get('interval')) ?? 0
+            for (let link of links.slice(0, amount)) {
+                if (interval > 0) {
+                    await new Promise(res => setTimeout(res, interval));
+                }
+                const img = document.createElement('img');
+                img.src = link;
+                document.body.appendChild(img)
+            }
+        })
+</script>
+</body>
+</html>

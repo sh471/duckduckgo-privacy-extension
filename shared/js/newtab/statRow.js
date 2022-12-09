@@ -3,6 +3,9 @@ import { css, html, LitElement } from 'lit'
 export class StatRow extends LitElement {
     static styles = [
         css`
+          *, *:before, *:after {
+            box-sizing: border-box;
+          }
           li {
             display: flex;
           }
@@ -19,9 +22,13 @@ export class StatRow extends LitElement {
           }
 
           .bar {
-            width: 60%;
             display: flex;
             flex: 1;
+            width: 60%;
+          }
+          
+          .bar-inner {
+            display: flex;
             border-radius: 20px;
             background: rgba(0, 0, 0, 0.06);
             padding: 5.5px 8px;
@@ -29,7 +36,7 @@ export class StatRow extends LitElement {
             font-size: 10px;
             font-weight: 600;
             line-height: 13px;
-            letter-spacing: 0.11999999731779099px;
+            letter-spacing: 0.11999999731779099px; 
           }
 
           .company-icon {
@@ -45,6 +52,11 @@ export class StatRow extends LitElement {
 
           .company-name {
             margin-left: 12px;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 16px;
           }
 
           .img {
@@ -57,7 +69,16 @@ export class StatRow extends LitElement {
     static properties = {
         count: { type: Number },
         name: { type: String },
-        favicon: { type: String }
+        favicon: { type: String },
+        index: { type: Number },
+        percentage: { type: Number }
+    }
+
+    get countText() {
+        if (this.index === 0) {
+            return html`${this.count} attempt${this.count === 1 ? '' : 's'}`
+        }
+        return html`${this.count}`
     }
 
     render () {
@@ -70,7 +91,7 @@ export class StatRow extends LitElement {
                     <span class="company-name">${this.name}</span>
                 </div>
                 <div class="bar">
-                    ${this.count} attempt${this.count === 1 ? '' : 's'}
+                    <div class="bar-inner" style="min-width: ${this.percentage}%; max-width: 60%">${this.countText}</div>
                 </div>
             </li>
         `
