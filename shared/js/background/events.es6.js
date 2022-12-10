@@ -474,14 +474,14 @@ messageHandlers['newTabPage.update.readInitial'] = () => {
 messageHandlers['newTabPage.update.reset'] = () => {
     chrome.runtime.sendMessage({
         messageType: 'newTabPage.update',
-        options: companiesSimples.reset().toJSON()
+        options: companiesSimples.reset().toDisplayData()
     })
 }
 
 function sendNewTabPage() {
     chrome.runtime.sendMessage({
         messageType: 'newTabPage.update',
-        options: companiesSimples.toJSON()
+        options: companiesSimples.toDisplayData()
     })
 }
 
@@ -544,6 +544,8 @@ browserWrapper.createAlarm('clearExpiredHTTPSServiceCache', { periodInMinutes: 6
 browserWrapper.createAlarm('rotateUserAgent', { periodInMinutes: 24 * 60 })
 // Rotate the sessionKey
 browserWrapper.createAlarm('rotateSessionKey', { periodInMinutes: 24 * 60 })
+// Send new tab Data
+browserWrapper.createAlarm('sendNewTabData', { periodInMinutes: 0.1 })
 //
 browser.alarms.onAlarm.addListener(async alarmEvent => {
     // Warning: Awaiting in this function doesn't actually wait for the promise to resolve before unblocking the main thread.
@@ -570,6 +572,8 @@ browser.alarms.onAlarm.addListener(async alarmEvent => {
         httpsService.clearExpiredCache()
     } else if (alarmEvent.name === 'sendCompanies') {
 
+    } else if (alarmEvent.name === 'sendNewTabData') {
+        sendNewTabPage()
     } else if (alarmEvent.name === 'rotateSessionKey') {
         await utils.resetSessionKey()
     } else if (alarmEvent.name === REFETCH_ALIAS_ALARM) {

@@ -31,6 +31,7 @@ class TrackerStats extends LitElement {
       }
     `]
 
+    /** @type {import("z").infer<typeof jsonSchema>["trackerCompanies]} */
     trackerCompanies = []
     trackerCompaniesPeriod = 'last-hour'
     totalCount = 0
@@ -66,7 +67,6 @@ class TrackerStats extends LitElement {
                 const otherTotal = other.reduce((sum, item) => sum + item.count, 0);
                 if (otherTotal > 0) {
                     listToRender.push({
-                        name: 'Other',
                         displayName: 'Other',
                         count: otherTotal,
                         favicon: 'Other.png',
@@ -77,7 +77,6 @@ class TrackerStats extends LitElement {
                 this.totalCount = data.totalCount;
                 this.totalPeriod = data.totalPeriod;
                 this.requestUpdate();
-                console.log('update?', data.trackerCompanies);
             } else {
                 // console.log('ignoring ', msg)
             }

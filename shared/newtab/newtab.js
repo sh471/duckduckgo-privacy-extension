@@ -675,7 +675,7 @@
                 <span class="company-icon">
                     <img src=${this.favicon} alt="" class="img"/>
                 </span>
-                    <span class="company-name">${this.name}</span>
+                    <span class="company-name">${this.displayName}</span>
                 </div>
                 <div class="bar">
                     <div class="bar-inner" style="min-width: ${this.percentage}%; max-width: 60%">${this.countText}</div>
@@ -751,7 +751,7 @@
   ]);
   __publicField(StatRow, "properties", {
     count: { type: Number },
-    name: { type: String },
+    displayName: { type: String },
     favicon: { type: String },
     index: { type: Number },
     percentage: { type: Number }
@@ -902,7 +902,7 @@
         return y`
                         <ddg-stat-row 
                             .count=${item.count} 
-                            .name=${item.name} 
+                            .displayName=${item.displayName} 
                             .percentage=${percentage} 
                             .favicon=${item.favicon} 
                             .index=${index}></ddg-stat-row>
@@ -1068,7 +1068,7 @@
     });
   }
   function getFaviconUrl(url) {
-    return `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(url)}&size=32`;
+    return `chrome://favicon/size/32@1x/${url}`;
   }
   var TopSite = class extends s4 {
     render() {
@@ -3925,13 +3925,48 @@
     trackerCompaniesPeriod: enumType(["last-hour"]),
     trackerCompanies: arrayType(
       objectType({
-        name: stringType(),
         displayName: stringType(),
         count: numberType(),
         favicon: stringType().default(() => "Shield.png")
       })
     )
   });
+  var _TimedCache = class {
+    constructor() {
+      __publicField(this, "entries", []);
+    }
+    clear() {
+      this.entries = [];
+    }
+    insert(key, timestamp = Date.now()) {
+      this.entries.unshift([key, timestamp]);
+    }
+    update(maxAgeMs = _TimedCache.HOUR, now = Date.now()) {
+      const output = {};
+      let evictIndex = null;
+      let count = 0;
+      for (let [key, date] of this.entries) {
+        const age = now - date;
+        if (age > maxAgeMs) {
+          evictIndex = count;
+          break;
+        } else {
+          if (!output[key])
+            output[key] = { count: 0, key };
+          output[key].count += 1;
+          count += 1;
+        }
+      }
+      if (evictIndex !== null) {
+        this.entries.splice(evictIndex, this.entries.length - evictIndex);
+      }
+      return [...Object.values(output)];
+    }
+  };
+  var TimedCache = _TimedCache;
+  __publicField(TimedCache, "SEC", 1 * 1e3);
+  __publicField(TimedCache, "MIN", _TimedCache.SEC * 60);
+  __publicField(TimedCache, "HOUR", _TimedCache.MIN * 60);
 
   // shared/js/newtab/tracker-stats.js
   var TrackerStats = class extends s4 {
@@ -3958,7 +3993,6 @@
           const otherTotal = other.reduce((sum, item) => sum + item.count, 0);
           if (otherTotal > 0) {
             listToRender.push({
-              name: "Other",
               displayName: "Other",
               count: otherTotal,
               favicon: "Other.png"
@@ -3969,7 +4003,6 @@
           this.totalCount = data.totalCount;
           this.totalPeriod = data.totalPeriod;
           this.requestUpdate();
-          console.log("update?", data.trackerCompanies);
         } else {
         }
       });

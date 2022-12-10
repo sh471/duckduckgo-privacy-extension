@@ -6,7 +6,6 @@ export class Feed extends LitElement {
     static properties = {
         trackerCompanies: { type: Array }
     }
-
     static styles = [
         css`
 
@@ -49,7 +48,7 @@ export class Feed extends LitElement {
                     return html`
                         <ddg-stat-row 
                             .count=${item.count} 
-                            .name=${item.name} 
+                            .displayName=${item.displayName} 
                             .percentage=${percentage} 
                             .favicon=${item.favicon} 
                             .index=${index}></ddg-stat-row>

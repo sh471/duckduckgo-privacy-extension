@@ -125,8 +125,10 @@ function getTopSites () {
 
 // utils.js
 function getFaviconUrl (url) {
-    return `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(url)}&size=32`
-    // chrome://favicon2/?size=24&scaleFactor=1x&showFallbackMonogram=&pageUrl=http%3A%2F%2Flocalhost%3A3000%2Fhtml%2Fpopup.html%3Fstate%3Dbbc
+    // return `chrome-extension://${chrome.runtime.id}/_favicon/?pageUrl=${encodeURIComponent(url)}&size=32`
+    // console.log('here?');
+    return `chrome://favicon/size/32@1x/${url}`
+    // return `chrome://favicon2/?size=24&scaleFactor=1x&showFallbackMonogram=&pageUrl=${encodeURIComponent(url)}`
 }
 
 class TopSite extends LitElement {

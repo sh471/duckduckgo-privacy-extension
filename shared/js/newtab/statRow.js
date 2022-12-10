@@ -68,7 +68,7 @@ export class StatRow extends LitElement {
     ]
     static properties = {
         count: { type: Number },
-        name: { type: String },
+        displayName: { type: String },
         favicon: { type: String },
         index: { type: Number },
         percentage: { type: Number }
@@ -88,7 +88,7 @@ export class StatRow extends LitElement {
                 <span class="company-icon">
                     <img src=${this.favicon} alt="" class="img"/>
                 </span>
-                    <span class="company-name">${this.name}</span>
+                    <span class="company-name">${this.displayName}</span>
                 </div>
                 <div class="bar">
                     <div class="bar-inner" style="min-width: ${this.percentage}%; max-width: 60%">${this.countText}</div>
