@@ -27,6 +27,7 @@ export class TimedCache {
      * @param {number} [timestamp]
      */
     insert(key, timestamp = Date.now()) {
+        // todo: use 'push' here for perf
         this.entries.unshift([key, timestamp])
     }
 
@@ -41,6 +42,7 @@ export class TimedCache {
         /** @type {number | null} */
         let evictIndex = null;
         let count = 0;
+        // todo: once we use `push` for this.entries, we'll need to loop backwards through this
         for (let [key, date] of this.entries) {
             const age = now - date;
             if (age > maxAgeMs) {
