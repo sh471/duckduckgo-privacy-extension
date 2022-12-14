@@ -41,7 +41,7 @@ export class Feed extends LitElement {
         }
         const max = this.trackerCompanies[0].count;
         return html`
-            <h2>Blocked over the last hour</h2>
+            <h2>Trackers blocked in the last hour</h2>
             <ul>
                 ${repeat(this.trackerCompanies, (x) => x.name, (item, index) => {
                     const percentage = Math.min((item.count * 100) / max, 100);

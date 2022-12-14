@@ -1,6 +1,6 @@
 import { css, html, LitElement } from 'lit'
 
-export class FeedHeader extends LitElement {
+export class DDGFeedHeader extends LitElement {
 
     static styles = [
         css`
@@ -34,7 +34,6 @@ export class FeedHeader extends LitElement {
           }
 
           .subtitle {
-            //styleName: Mac/Label (Medium);
             font-size: 13px;
             font-weight: 500;
             line-height: 13px;
@@ -68,4 +67,4 @@ export class FeedHeader extends LitElement {
     }
 }
 
-customElements.define('ddg-feed-header', FeedHeader)
+customElements.define('ddg-feed-header', DDGFeedHeader)

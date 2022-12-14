@@ -79,7 +79,7 @@ export class TopSites extends LitElement {
         return html`
             <div class="root">
                 <ul class="list">
-                    ${repeat(this.topSites, (x) => x.title, x => {
+                    ${repeat(this.topSites.slice(0, 6), (x) => x.title, x => {
                         return html`
                             <li class="item"><ddg-top-site .url=${x.url} .favicon=${x.favicon} .title=${x.title}></ddg-top-site></li>
                         `

@@ -29,6 +29,7 @@
         "release-firefox": "make browser=firefox type=release",
         "demo": "make dev browser=chrome type=dev; cd build/chrome/dev && zip -rq chrome-release-.zip *; open .; open https://app.asana.com/0/0/1203524361058164/f",
         "dev-chrome": "make dev browser=chrome type=dev watch=1",
+        "dev-newtab": "esbuild shared/js/newtab/newtab.js --bundle --outfile=shared/newtab/newtab.js --watch",
         "dev-chrome-mv3": "make dev browser=chrome-mv3 type=dev watch=1",
         "beta-firefox": "make beta-firefox browser=firefox type=release",
         "release-chrome": "make browser=chrome type=release && make chrome-release-zip",
