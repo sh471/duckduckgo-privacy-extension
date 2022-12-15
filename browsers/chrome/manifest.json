@@ -77,12 +77,9 @@
         "tabs",
         "storage",
         "<all_urls>",
-        "alarms",
-        "topSites",
-        "chrome://favicon/",
-        "favicon"
+        "alarms"
     ],
-    "content_security_policy": "img-src chrome://favicon;",
+    "optional_permissions": ["topSites"],
     "web_accessible_resources": [
         "/web_accessible_resources/*",
         "/img/logo-small.svg",
